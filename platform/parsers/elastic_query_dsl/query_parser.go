@@ -7,6 +7,10 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strconv"
+	"strings"
+	"unicode"
+
 	"github.com/QuesmaOrg/quesma/platform/database_common"
 	"github.com/QuesmaOrg/quesma/platform/logger"
 	"github.com/QuesmaOrg/quesma/platform/model"
@@ -19,9 +23,6 @@ import (
 	"github.com/QuesmaOrg/quesma/platform/util/regex"
 	"github.com/goccy/go-json"
 	"github.com/k0kubun/pp"
-	"strconv"
-	"strings"
-	"unicode"
 )
 
 type QueryMap = map[string]interface{}
@@ -34,9 +35,9 @@ func NewEmptyHighlighter() model.Highlighter {
 }
 
 const (
-	defaultQueryResultSize        = 10
-	increasedResultSizeForIdQuery = 10000 // In `_id` query we had to fetch way more documents as these have to be filtered later on, when assembling the result
-	defaultTrackTotalHits         = 10000
+	defaultQueryResultSize        = 100000
+	increasedResultSizeForIdQuery = 100000 // In `_id` query we had to fetch way more documents as these have to be filtered later on, when assembling the result
+	defaultTrackTotalHits         = 100000
 	uuidSeparator                 = "qqq" // Document IDs (_id) fields in quesma ar
 )
 
