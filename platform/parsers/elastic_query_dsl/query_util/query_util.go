@@ -4,6 +4,7 @@ package query_util
 
 import (
 	"context"
+
 	"github.com/QuesmaOrg/quesma/platform/logger"
 	"github.com/QuesmaOrg/quesma/platform/model"
 	"github.com/QuesmaOrg/quesma/platform/model/bucket_aggregations"
@@ -61,7 +62,7 @@ func BuildHitsQuery(ctx context.Context, tableName string, fieldNames []string, 
 
 func applySizeLimit(ctx context.Context, size int) int {
 	// FIXME hard limit here to prevent OOM
-	const quesmaMaxSize = 10000
+	const quesmaMaxSize = 100000
 	if size > quesmaMaxSize {
 		logger.WarnWithCtx(ctx).Msgf("setting hits size to=%d, got=%d", quesmaMaxSize, size)
 		size = quesmaMaxSize
