@@ -1,0 +1,88 @@
+frontendConnectors:
+  - name: elastic-ingest
+    type: elasticsearch-fe-ingest
+    config:
+      listenPort: ${FRONTEND_ELASTICSEARCH_LISTEN_PORT}
+      disableAuth: ${FRONTEND_ELASTICSEARCH_INGEST_DISABLE_AUTH}
+  - name: elastic-query
+    type: elasticsearch-fe-query
+    config:
+      listenPort: ${FRONTEND_ELASTICSEARCH_LISTEN_PORT}
+backendConnectors:
+  - name: my-minimal-elasticsearch
+    type: elasticsearch
+    config:
+      url: "${BACKEND_ELASTICSEARCH_URL}"
+      adminUrl: "${BACKEND_ELASTICSEARCH_ADMIN_URL}"
+      user: "${BACKEND_ELASTICSEARCH_USER}"
+      password: "${BACKEND_ELASTICSEARCH_PASSWORD}"
+  - name: my-clickhouse-data-source
+    type: clickhouse-os
+    config:
+      url: "${BACKEND_CLICKHOUSE_URL}"
+      disableTLS: true
+      adminUrl: "${BACKEND_CLICKHOUSE_ADMIN_URL}"
+      database: "${BACKEND_CLICKHOUSE_DATABASE}"
+      user: "${BACKEND_CLICKHOUSE_USER}"
+      password: "${BACKEND_CLICKHOUSE_PASSWORD}"
+# ingestStatistics: true 
+processors:
+  - name: my-query-processor
+    type: quesma-v1-processor-query
+    config:
+      indexes:
+        "elastalert_status":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert_error":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert_silence":
+          target:
+            - my-minimal-elasticsearch
+        "passivedns_v2":
+          useCommonTable: false
+          tableName: "passivedns_v2"
+          target:
+            - my-clickhouse-data-source
+        "*":
+          useCommonTable: false
+          target:
+            - my-minimal-elasticsearch
+  - name: my-ingest-processor
+    type: quesma-v1-processor-ingest
+    config:
+      indexes:
+        "elastalert_status":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert_error":
+          target:
+            - my-minimal-elasticsearch
+        "elastalert_silence":
+          target:
+            - my-minimal-elasticsearch
+        "passivedns_v2":
+          useCommonTable: false
+          tableName: "passivedns_v2"
+          target:
+            - my-clickhouse-data-source
+        "*":
+          useCommonTable: false
+          target:
+            - my-minimal-elasticsearch
+pipelines:
+  - name: my-pipeline-elasticsearch-query-clickhouse
+    frontendConnectors: [ elastic-query ]
+    processors: [ my-query-processor ]
+    backendConnectors: [ my-minimal-elasticsearch, my-clickhouse-data-source ]
+  - name: my-pipeline-elasticsearch-ingest-to-clickhouse
+    frontendConnectors: [ elastic-ingest ]
+    processors: [ my-ingest-processor ]
+    backendConnectors: [ my-minimal-elasticsearch, my-clickhouse-data-source ]

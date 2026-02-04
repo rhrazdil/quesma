@@ -1,0 +1,18 @@
+#Quesma runtime image
+FROM harbor.whalebone.io/whalebone/wbquesma:0.0.4 AS quesma-runtime
+
+#Image to get necessary tools
+FROM alpine:3.18
+
+# Install tools
+RUN apk add --no-cache --update gettext bash ca-certificates
+
+# Copy the quesma executables
+COPY --from=quesma-runtime ./bin /quesma/bin
+COPY --from=quesma-runtime ./healthcheck /quesma/healthcheck
+
+# Copy the template config file and the new entrypoint script
+COPY config/starter-config.yml /config/starter-config.yml.template
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
